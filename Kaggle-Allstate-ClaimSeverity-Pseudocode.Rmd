@@ -1,0 +1,209 @@
+---
+title: "Kaggle-Allstate-ClaimSeverity-Pseudocode"
+output:
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+Problem Statement:
+Predict claims severity, the loss values with the lowest MAE (mean absolute error).
+
+
+Approach:
+Whole data has been divided as follows.
+1.	Train data
+2.	Validation data
+3.	Test data
+
+
+Techniques used:
+Bagging:
+
+Given a dataset D containing n training instances, generate a dataset D' by randomly selecting N instances from D with replacement, that is,
+
+    initialize D' as an empty set
+    repeat N times:
+		    randomly select an instance x from D
+		    add x to D'
+
+
+
+Feature Engineering:
+Note: Feature Engineering is done by combining the train and test data and after that splitting with their respective ids.
+1.	Categorical Counts
+step-1:Select all the categorical data.
+step-2:Find all the frequency of each level in each column.
+step-3:Replace the actual value with its frequency and make it new columns for all the categorical data.
+
+2.	Categorical dummy
+step-1:Select all the categorical data.
+step-2:Find all the frequency of each level in each column.
+step-3:Check the condition if the levels of the columns less than 10.
+step-4:If greater than 10 ,create a new variable with 1's where the value appears else 0.
+step-5:If lesser than 10, group the levels and create a new variable with 1's where the values appears else 0.
+
+3.	Categorical Encoding
+step-1:select the categorical columns.
+step-2:In each column arranging the elements in ascending order.(eg.column1:A,B,C,D....)
+step-3:Assigning the values of the columns from 1 to its length of the levels in that column respectively (A=1,B=2,c=3,D=4.....)
+step-4:Generating new columns with the values assigned(eg.newcolumn:1,2,3,4...)
+
+4.	Cluster RBF
+step-1:Consider dummy data with scaled numeric variables.
+step-2:using MiniBatchKmeans clustering method.
+step-3:creating clusters 25, 50, 75, 100, 200.
+step-4:Applying RBF kernel.Capturing the distance from its each values to its clusters.
+step-5:These distances are making them as new columns(eg. 25 column generated for 25 clusters).
+
+5.	Manual
+step-1:Taking numerical data.
+step-2:Manually subtracting column9 from column1.
+
+6.	Numeric Boxcox
+step-1:Consider only numeric variables.
+step-2:Find the skewness of each numerical columns.
+step-3:Check the condition if the skewness of the column is greater than 0.25 than apply boxcox on that column.
+step-4:Create new columns for the above columns.
+
+7.	Numeric combination
+step-1:Consider only numeric variables.
+step-2:Find the correlation of all the variables.
+step-3:Substracting the variables from each other which are highly multicollinear.
+step-4:Create new columns for them.
+
+8.	Numeric Scaled
+step-1:Consider only numeric variables.
+step-2:Apply scale function for all the numerical variables.
+step-3:create new columns for the scaled numerical variables
+
+9.	Numeric unskew
+step-1:Consider only numeric variables.
+step-2:Applying log function to right skewned columns.
+step-3:Applying sqrt function to right skewned columns.
+step-4:adding that transformed data as new columns to the original data. 
+
+10.	SVD(variable reduction technique)
+step-1:consider numerical and categorical dummy data.
+step-2:Apply SVD and created 500 components which explains maximum variance. 
+step-3:create new columns for the SVD components.
+
+11.  Numeric rank norm
+step-1:Consider only numeric variables.
+step-2:Rank the  numerical variables.
+step-3:Normalize the data to get the values in range -1 to +1.
+step-4:scale the variables.
+step-5:create new columns for all the scaled variables.
+
+12.  Numeric edges
+step-1:Consider only numeric variables
+step-2:check the condition if the count of zeros in the data greater than 20 then create new column with 1's where every 0's occurs in that particular column.
+step-3:check the condition if the count of ones in the data greater than 20 then create new column with 1's where every 1's occurs in that particular column.
+
+
+Saving each feature engineering output sepearatly.while running the models,used these different combinations of data(eg:model1 with only numerical and Categorical Counts,model2 with numerical and Categorical dummy...).
+
+
+Algorithms used in Level 1
+.	XGboost
+.	LightGBM
+.	LibFM
+.	Keras(Deep Learning, nn_mlp)
+.	AdaBoostRegressor
+.	ExtraTreesRegressor
+.	RandomForestRegressor
+.	Ridge
+.	KNeighborsRegressor
+.	SVR
+.	GradientBoostingRegressor
+.	QuantileRegression
+
+
+
+With different combination of parameters and different combinations of data, ran machine learning algorithms and saved the outputs of each model and consider as level1.
+
+All the methods are created as one function(classes) and calling them when ever they required.
+
+
+Following are the steps followed for each algorithm:
+step-1:Load train data and test data.
+step-2:check the args.optimize is True.
+        
+        split the train data into train and eval. 
+        check the condition length of features greater than 1.
+        Tansform all the features that are mentioned.
+        Ran the model with those transformed features.
+        
+step-3: check if input has parameter power.
+        
+        consider the feature names.
+        power the variables in the features data.
+        
+
+step-4:By using folds,split the training data.
+      
+      checked wheather the length of feature_builders is greater than 1.
+      transform the feature variables for train,eval,test.
+      
+      
+step-5:checked if nbags parameter is given,loop the data for that many iternations.
+        checked if the input paramter has sample.
+        it Resamples the data.
+        
+        checked if the input paramter has feature_sample.
+        select the columns indexes randomly by selecting np.random.choice.
+        with indexes find the columns from the train,same for eval and test datasets.
+        
+        checked if the input paramter has svd.
+        transform the data by using svd for the train , eval and test datasets.
+        
+        
+step-6:Train the model for each bag,and save the predictions respectively and print the calculated MAE.
+
+step-7:consider whole train and test data.
+
+step-8:Again use bagging loop for this whole train data.
+        checked if the input paramter has sample.
+        it Resamples the data.
+        
+        checked if the input paramter has feature_sample.
+        select the columns indexes randomly by selecting np.random.choice.
+        with indexes find the columns from the train,same for eval and test datasets.
+        
+        checked if the input paramter has svd.
+        transform the data by using svd for the train , eval and test datasets.
+      
+
+step-9:Build the model,and predict for the test data for each bag.
+
+step-10:Save the predictions for each bag.
+        finally there are three data sets of predictions(training set,testing set and test set when full training set is consider)
+        
+step-11:so finally mean aggregating the predicted columns(bag1 column,bag2 column...)in the data w.r.t their ids.
+
+step-12:Save the predicitons for each algorithm.
+
+
+These predictions from models in level1(prediction from model1 ,model2...so on ,consider as columns and its respective y label) along with the combination of input data are used as inputs for the level 2.
+
+Second level:
+Trained XGB and Keras NN models, with different parameters, but also included linear regression with different target transformations, random forests and gradient boosting from sklearn, because it can optimize MAE directly.
+Only these Level 2 predictions are taken as input  excluding level1 predictions for the Level3.  
+
+For each algorithm steps 1 to 12 are repeated.
+
+Third level:
+Used quantile regression from statsmodels package. It doesn't have any regularization and seems to produce noisy results, tried to reduce model noise.
+
+For each algorithm steps 1 to 12 are repeated.
+
+Note: Predictions from level 1 are used as independent variables for level 2 models and it is repeated for further levels.
+
+
+
+
+
+
+
+
+
